@@ -60,7 +60,7 @@ app.set('port', (process.env.PORT || 5000));
 app.use(express.static(__dirname + '/public'));
 
 app.get('/', function(request, response) {
-    console.log('index');
+    response.sendFile(__dirname + '/public/index.html');
 });
 
 app.post('/followers/like', (req, res) => {
