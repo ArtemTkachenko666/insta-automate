@@ -2,6 +2,7 @@ var express = require('express');
 var app = express();
 
 const Client = require('instagram-private-api').V1;
+const Session = new ClientSession();
 
 class ClientSession {
     constructor() {
@@ -11,8 +12,8 @@ class ClientSession {
 
     create() {
         return new Promise((resolve) => {
-            Client.Session.create(this.device, this.storage, 'nikola_flamel', 'artem666')
-                .then(session => this.session = session).then(() => Client.Account.searchForUser(this.session, 'nikola_flamel')
+            Client.Session.create(this.device, this.storage, 'rest_in_kirovograd', 'flashuuk19')
+                .then(session => this.session = session).then(() => Client.Account.searchForUser(this.session, 'rest_in_kirovograd')
                 .then(({_params}) => {
                     this.accountParams = _params;
                     resolve();
@@ -54,23 +55,23 @@ class ClientSession {
     }
 };
 
-
 app.set('port', (process.env.PORT || 5000));
 
 app.use(express.static(__dirname + '/public'));
 
-app.get('/', function(request, response) {
+app.get('/', function (request, response) {
     response.sendFile(__dirname + '/public/index.html');
 });
 
 app.post('/followers/like', (req, res) => {
-	const Session = new ClientSession();
 
-	Session.create().then(() => Session.getFollowers().then((followers) => {
-		Session.sendLikeToRecentMedia(followers)
-	}));
+    Session.create().then(() => Session.getFollowers().then((followers) => {
+        Session.sendLikeToRecentMedia(followers)
+    }));
+
+    res.send('Liking is started');
 });
 
-app.listen(app.get('port'), function() {
-  console.log('Node app is running on port', app.get('port'));
+app.listen(app.get('port'), function () {
+    console.log('Node app is running on port', app.get('port'));
 });

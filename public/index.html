@@ -5,6 +5,13 @@
     <title>Title</title>
 </head>
 <body>
-Soon
+<div id="describtion">CLick the button</div>
+
+<button>Like</button>
+<script>
+    document.querySelector('button').addEventListener('click', function () {
+        fetch('/followers/like').then(body => body.text()).then(text => document.querySelector('#describtion').innerHTML = text)
+    })
+</script>
 </body>
 </html>
