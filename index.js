@@ -2,7 +2,6 @@ var express = require('express');
 var app = express();
 
 const Client = require('instagram-private-api').V1;
-const Session = new ClientSession();
 
 class ClientSession {
     constructor() {
@@ -54,6 +53,8 @@ class ClientSession {
         }));
     }
 };
+
+const Session = new ClientSession();
 
 app.set('port', (process.env.PORT || 5000));
 
