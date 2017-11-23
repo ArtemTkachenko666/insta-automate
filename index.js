@@ -127,7 +127,7 @@ app.get('/', function (request, response) {
     response.sendFile(__dirname + '/public/index.html');
 });
 
-const MINUTEST = 5;
+const MINUTEST = 10;
 
 const timer = new Timer();
 
