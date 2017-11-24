@@ -30,8 +30,6 @@ admin.initializeApp({
 
 const db = admin.database();
 
-// db.ref('/posts').once('value').then((data) => console.log(data.val().liked));
-
 class ClientSession {
     constructor(name, password) {
         this.device = new Client.Device('new_device1');
@@ -77,10 +75,7 @@ class ClientSession {
     }
 
     sendLikeToMedias(medias) {
-        return Promise.all(medias.map(media => this.sendLikeToMedia(media))).then(likedMedias => ({
-            date: this.getDate(),
-            posts: likedMedias
-        }));
+        return Promise.all(medias.map(media => this.sendLikeToMedia(media))).then(likedMedias => likedMedias);
     }
 
     sendLikeToRecentMedia(followers) {
@@ -106,10 +101,7 @@ class ClientSession {
     }
 
     followUsers(ids) {
-        return Promise.all(ids.map(id => Client.Relationship.create(this.session, id))).then(users => ({
-            date: this.getDate(),
-            users: users
-        }));
+        return Promise.all(ids.map(id => Client.Relationship.create(this.session, id))).then(users => users);
     }
 
     getMediaOwners(medias) {
@@ -170,14 +162,16 @@ app.post('/followers/recent/medias/like', (req, res) => {
 
                 Session.getTaggedMedia().then((medias) => {
                     Session.sendLikeToMedias(medias).then((likedMedias) => {
-                        if (likedMedias.posts.length > 0) {
-                            Posts.LikedTagged.push(likedMedias);
+                        if (likedMedias.length > 0) {
+                            const key = Date.parse(ClientSession.getDate());
+                            db.ref('/posts/likedTagged').child(key).set({likedMedias});
                         }
                     });
 
                     Session.followUsers(Session.getMediaOwners(medias)).then((followed) => {
-                        if (followed.users.length > 0) {
-                            Posts.TaggedMediaOwners.push(followed)
+                        if (followed.length > 0) {
+                            const key = Date.parse(ClientSession.getDate());
+                            db.ref('/posts/taggedMediaOwners').child(key).set({followed});
                         }
                     });
                 });
