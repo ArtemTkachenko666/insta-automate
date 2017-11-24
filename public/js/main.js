@@ -10,8 +10,7 @@
             'Content-Type': 'application/json'
         },
     }).then(resp => resp.json()).then((data) => {
-        const {Liked, LikedTagged, TaggedMediaOwners} = data;
-        const date = Object.values(Liked).map(({date, posts}) => [Date.parse(date), posts.length]);
+        const date = Object.entries(data).map(([key, value]) => [key, value.posts.length]);
 
         Highcharts.stockChart('ct-chart', {
             rangeSelector: {
