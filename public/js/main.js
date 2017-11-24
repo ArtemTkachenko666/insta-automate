@@ -10,7 +10,7 @@
             'Content-Type': 'application/json'
         },
     }).then(resp => resp.json()).then((data) => {
-        const date = Object.entries(data).map(([key, value]) => [key, value.posts.length]);
+        const date = Object.entries(data).map(([key, value]) => [+key, value.posts.length]);
 
         Highcharts.stockChart('ct-chart', {
             rangeSelector: {
@@ -26,8 +26,6 @@
                 data: date
             }]
         });
-
-        console.log(data);
     });
 
 
