@@ -152,12 +152,12 @@ app.post('/followers/recent/medias/like', (req, res) => {
             const Session = new ClientSession(name, password);
             Session.create().then(() => {
                 Session.getFollowers().then((followers) => {
-                    Session.sendLikeToRecentMedia(followers).then((posts = []) => {
-                        if (posts.length > 0) {
-                            const key = Date.parse(ClientSession.getDate());
-                            db.ref('/posts/liked').child(key).set({posts});
-                        }
-                    })
+                    // Session.sendLikeToRecentMedia(followers).then((posts = []) => {
+                    //     if (posts.length > 0) {
+                    //         const key = Date.parse(ClientSession.getDate());
+                    //         db.ref('/posts/liked').child(key).set({posts});
+                    //     }
+                    // })
                 });
 
                 Session.getTaggedMedia().then((medias) => {
