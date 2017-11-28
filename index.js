@@ -81,21 +81,19 @@ class ClientSession {
     sendLikeToRecentMedia(followers) {
         const posts = [];
 
-        return Promise.all(followers.map(({id, _params: {isPrivate}}) => {
-            if (!isPrivate) {
-                let media = new Client.Feed.UserMedia(this.session, id);
-                if (media) {
-                    return media.get().then((list) => {
-                        if (list && list[0]) {
-                            const {params: {images, hasLiked, webLink, id, account}} = list[0];
-                            if (!hasLiked) {
-                                this.sendLikeToMedia(list[0]).then(() => {
-                                    posts.push({images, hasLiked, webLink, id, account});
-                                });
-                            }
+        return Promise.all(followers.map(({id}) => {
+            let media = new Client.Feed.UserMedia(this.session, id);
+            if (media) {
+                return media.get().then((list) => {
+                    if (list && list[0]) {
+                        const {params: {images, hasLiked, webLink, id, account}} = list[0];
+                        if (!hasLiked) {
+                            this.sendLikeToMedia(list[0]).then(() => {
+                                posts.push({images, hasLiked, webLink, id, account});
+                            });
                         }
-                    });
-                }
+                    }
+                });
             }
         })).then(() => posts);
     }
