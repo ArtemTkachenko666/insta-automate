@@ -4,7 +4,7 @@
         password: 'flashuuk19'
     };
 
-    const getLiked = () => fetch('/followers/recent/medias/liked', {
+    const getLiked = () => fetch('/medias/like', {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -28,8 +28,9 @@
         });
     });
 
+    const terminateLike = () => fetch('/medias/like/terminate');
 
-    fetch('/followers/recent/medias/like', {
+    fetch('/medias', {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -39,6 +40,7 @@
     });
 
     document.querySelector('.request').addEventListener('click', getLiked);
+    document.querySelector('.terminate-request').addEventListener('click', terminateLike);
 
     getLiked();
 

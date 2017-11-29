@@ -5,12 +5,6 @@ const admin = require("firebase-admin");
 
 const Client = require('instagram-private-api').V1;
 
-const Posts = {
-    Liked: [],
-    LikedTagged: [],
-    TaggedMediaOwners: []
-};
-
 admin.initializeApp({
     credential: admin.credential.cert({
             "type": "service_account",
@@ -44,7 +38,7 @@ class ClientSession {
 
         date.setHours(date.getHours() + HOURS);
 
-        return date;
+        return Date.parse(date);
     }
 
     create() {
@@ -75,7 +69,10 @@ class ClientSession {
     }
 
     sendLikeToMedias(medias) {
-        return Promise.all(medias.map(media => this.sendLikeToMedia(media))).then(likedMedias => likedMedias);
+        return Promise.all(medias.map(media => this.sendLikeToMedia(media))).then(likedMedias => ({
+            date: ClientSession.getDate(),
+            likedMedias
+        }));
     }
 
     sendLikeToRecentMedia(followers) {
@@ -97,11 +94,17 @@ class ClientSession {
                     });
                 }
             }
-        })).then(() => posts);
+        })).then(() => ({
+            date: ClientSession.getDate(),
+            posts
+        }));
     }
 
     followUsers(ids) {
-        return Promise.all(ids.map(id => Client.Relationship.create(this.session, id))).then(users => users);
+        return Promise.all(ids.map(id => Client.Relationship.create(this.session, id))).then(users => ({
+            date: ClientSession.getDate(),
+            users
+        }));
     }
 
     getMediaOwners(medias) {
@@ -142,7 +145,12 @@ const MINUTEST = 10;
 
 const timer = new Timer();
 
-app.post('/followers/recent/medias/like', (req, res) => {
+const STATUS = {
+    STARTED: 'STARTED',
+    FINISHED: 'FINISHED'
+};
+
+app.post('/medias/like', (req, res) => {
     const {body} = req;
 
     const {name, password} = body;
@@ -152,26 +160,23 @@ app.post('/followers/recent/medias/like', (req, res) => {
             const Session = new ClientSession(name, password);
             Session.create().then(() => {
                 Session.getFollowers().then((followers) => {
-                    // Session.sendLikeToRecentMedia(followers).then((posts = []) => {
-                    //     if (posts.length > 0) {
-                    //         const key = Date.parse(ClientSession.getDate());
-                    //         db.ref('/posts/liked').child(key).set({posts});
-                    //     }
-                    // })
+                    Session.sendLikeToRecentMedia(followers).then(({date, posts}) => {
+                        if (posts.length > 0) {
+                            db.ref('/posts/liked').child(date).set({posts});
+                        }
+                    })
                 });
 
                 Session.getTaggedMedia().then((medias) => {
-                    Session.sendLikeToMedias(medias).then((likedMedias) => {
+                    Session.sendLikeToMedias(medias).then(({date, likedMedias}) => {
                         if (likedMedias.length > 0) {
-                            const key = Date.parse(ClientSession.getDate());
-                            db.ref('/posts/likedTagged').child(key).set({likedMedias});
+                            db.ref('/posts/likedTagged').child(date).set({likedMedias});
                         }
                     });
 
-                    Session.followUsers(Session.getMediaOwners(medias)).then((followed) => {
-                        if (followed.length > 0) {
-                            const key = Date.parse(ClientSession.getDate());
-                            db.ref('/posts/taggedMediaOwners').child(key).set({followed});
+                    Session.followUsers(Session.getMediaOwners(medias)).then(({date, users}) => {
+                        if (users.length > 0) {
+                            db.ref('/posts/taggedMediaOwners').child(date).set({users});
                         }
                     });
                 });
@@ -179,13 +184,23 @@ app.post('/followers/recent/medias/like', (req, res) => {
         }, 1000 * 60 * MINUTEST);
     }
 
-    res.send('Liking is started');
+    res.send(JSON.stringify({status: STATUS.STARTED}));
 });
 
-app.get('/followers/recent/medias/liked', (request, response) => {
+app.post('/medias/like/terminate', (req, res) => {
+    timer.unsubscribe();
+
+    res.send(JSON.stringify({status: STATUS.FINISHED}));
+});
+
+app.get('/medias', (request, response) => {
     db.ref('/posts/liked')
         .once('value')
         .then(data => response.send(JSON.stringify(data.val())))
+});
+
+app.get('/medias/like/is-running', (res) => {
+    res.send(JSON.stringify({status: timer.isRunning}))
 });
 
 app.listen(app.get('port'), function () {
