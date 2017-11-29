@@ -55,7 +55,5 @@
 
     getLiked();
 
-    sendLike();
-
     setInterval(getLiked, 1000 * 60 * 5);
 })();
