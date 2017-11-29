@@ -199,7 +199,7 @@ app.get('/medias', (request, response) => {
         .then(data => response.send(JSON.stringify(data.val())))
 });
 
-app.get('/medias/like/is-running', (res) => {
+app.get('/medias/like/is-running', (req, res) => {
     res.send(JSON.stringify({status: timer.isRunning}))
 });
 
