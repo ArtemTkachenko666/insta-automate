@@ -141,7 +141,7 @@ app.get('/', function (request, response) {
     response.sendFile(__dirname + '/public/index.html');
 });
 
-const MINUTEST = 10;
+const MINUTEST = 120;
 
 const timer = new Timer();
 
@@ -160,7 +160,7 @@ app.post('/medias/like', (req, res) => {
             const Session = new ClientSession(name, password);
             Session.create().then(() => {
                 Session.getFollowers().then((followers) => {
-                    Session.sendLikeToRecentMedia(followers).then(({date, posts}) => {
+                    Session.sendLikeToRecentMedia(followers.splice(0,50)).then(({date, posts}) => {
                         if (posts.length > 0) {
                             db.ref('/posts/liked').child(date).set({posts});
                         }
