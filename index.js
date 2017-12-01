@@ -141,7 +141,7 @@ app.get('/', function (request, response) {
     response.sendFile(__dirname + '/public/index.html');
 });
 
-const MINUTEST = 120;
+const MINUTEST = 10;
 
 const timer = new Timer();
 
@@ -160,8 +160,10 @@ app.post('/medias/like', (req, res) => {
             const Session = new ClientSession(name, password);
             Session.create().then(() => {
                 Session.getFollowers().then((followers) => {
-                    Session.sendLikeToRecentMedia(followers.splice(0,50)).then(({date, posts}) => {
+                    Session.sendLikeToRecentMedia(followers).then(({date, posts}) => {
                         if (posts.length > 0) {
+                            console.log('*************LIKED POSTS**********');
+                            console.log(posts);
                             db.ref('/posts/liked').child(date).set({posts});
                         }
                     })
@@ -170,12 +172,16 @@ app.post('/medias/like', (req, res) => {
                 Session.getTaggedMedia().then((medias) => {
                     Session.sendLikeToMedias(medias).then(({date, likedMedias}) => {
                         if (likedMedias.length > 0) {
+                            console.log('**********LIKED TAGGED MEDIAS*********');
+                            console.log(likedMedias);
                             db.ref('/posts/likedTagged').child(date).set({likedMedias});
                         }
                     });
 
                     Session.followUsers(Session.getMediaOwners(medias)).then(({date, users}) => {
                         if (users.length > 0) {
+                            console.log('**********SUBSCRIBE TO USER**********');
+                            console.log(users);
                             db.ref('/posts/taggedMediaOwners').child(date).set({users});
                         }
                     });
